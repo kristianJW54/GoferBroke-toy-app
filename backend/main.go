@@ -67,15 +67,6 @@ func normDead(p *gossip.ParticipantFaulty) map[string]any {
 	}
 }
 
-func getDistDir() string {
-	exePath, err := os.Executable()
-	if err != nil {
-		log.Fatal("failed to get executable path:", err)
-	}
-	exeDir := filepath.Dir(exePath)
-	return filepath.Join(exeDir, "dist")
-}
-
 func main() {
 
 	modeFlag := flag.String("mode", "node", "Mode: seed | node")
@@ -272,11 +263,8 @@ func main() {
 		return c.JSON(fiber.Map{"ok": true})
 	})
 
-	//distDir := getDistDir()
-	//fmt.Printf("[web] Serving UI from %s\n", distDir)
-	//app.Static("/", distDir)
-
-	app.Static("/", "../dist")
+	wd, _ := os.Getwd()
+	app.Static("/", filepath.Join(wd, "dist"))
 
 	fmt.Printf("Listening on http://%s\n", *webAddr)
 	if err := app.Listen(*webAddr); err != nil {
