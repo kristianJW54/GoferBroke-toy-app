@@ -13,8 +13,6 @@ import (
 	"strings"
 )
 
-// toy cli flags for dynamic node configs on each instance
-
 type clusterSeedAddrs []string
 
 func (a *clusterSeedAddrs) String() string {
@@ -68,9 +66,6 @@ func normDead(p *gossip.ParticipantFaulty) map[string]any {
 }
 
 func main() {
-
-	// Start the gossip engine
-	// Register events we want to send to the ui
 
 	modeFlag := flag.String("mode", "node", "Mode: seed | node")
 	nodeName := flag.String("name", "node-a", "Node name")
@@ -162,7 +157,7 @@ func main() {
 		select {
 		case events <- ev:
 		default:
-			// drop if UI is slow or disconnected; never stall anti-entropy
+
 		}
 	}
 
@@ -220,7 +215,7 @@ func main() {
 	app := fiber.New()
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*", // different ports in your tabs
+		AllowOrigins: "*",
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 
@@ -238,7 +233,6 @@ func main() {
 		return nil
 	})
 
-	// 2) API
 	app.Post("/api/delta", func(c *fiber.Ctx) error {
 		body := c.Body()
 		fmt.Println("[POST /api/delta] Raw body:", string(body))
@@ -266,15 +260,7 @@ func main() {
 		return c.JSON(fiber.Map{"ok": true})
 	})
 
-	//buf := append([]byte(in.Value), '\r', '\n')
-	//d := gossip.CreateNewDelta(in.Group, in.Key, gossip.STRING, buf)
-	//if err := node.Update(d.KeyGroup, d.Key, d); err != nil {
-	//	return fiber.ErrBadRequest
-	//}
-
-	// 3) Static UI at /
-	// SSE + API routes defined above…
-	app.Static("/", "../dist") // or "./web/dist" depending on your folder layout
+	app.Static("/", "../dist")
 
 	log.Printf("Listening on http://%s", *webAddr)
 	if err := app.Listen(*webAddr); err != nil {

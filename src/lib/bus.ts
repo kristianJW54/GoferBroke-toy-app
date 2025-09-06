@@ -2,10 +2,8 @@ import { writable } from 'svelte/store';
 
 export type Envelope = { type: string; payload: any };
 
-// live event stream (raw envelopes so can render anything)
 export const events = writable<Envelope[]>([]);
 
-// optional: convenience view of just deltas
 export const deltas = writable<any[]>([]);
 
 export function connectEvents(base = '') {
@@ -30,7 +28,6 @@ export function connectEvents(base = '') {
     return es;
 }
 
-/** POST a new delta to this node’s API. Shape is up to your backend. */
 export async function sendDelta(
     base: string,
     body: { value: string; group?: string; key?: string }

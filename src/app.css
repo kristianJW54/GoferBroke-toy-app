@@ -4,9 +4,9 @@
   --fg-light: #f5d0fe;
   --chip-bg: #2d0a34;
   --chip-fg: #f9a8d4;
-  --accent: #e11d48; /* red/pink accent */
+  --accent: #e11d48;
   --radius: 12px;
-  --border: #cccccc; /* <-- faint grey border */
+  --border: #cccccc;
 }
 
 .logo-header {

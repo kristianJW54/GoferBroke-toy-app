@@ -2,16 +2,13 @@
   import { onMount } from 'svelte';
   import { events, connectEvents, sendDelta } from './lib/bus';
 
-  // Choose the node to talk to:
-  // - In dev, append ?node=http://127.0.0.1:9091 (or 9092/9093…) to the URL.
-  // - When UI is served by the node itself, omit ?node= and we'll use same-origin.
   const qs = new URLSearchParams(location.search);
   const base = qs.get('node') ?? '';
 
   let es: EventSource | null = null;
   let inputValue = '';
   let group = 'demo';
-  let key = ''; // optional; if empty we’ll generate one
+  let key = '';
 
   function mkKey() {
     return `k-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`;
@@ -29,7 +26,6 @@
 
     try {
       await sendDelta(base, payload);
-      // clear only the value; keep group/key editable
       inputValue = '';
     } catch (err) {
       alert((err as Error).message);
