@@ -10,6 +10,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/kristianJW54/GoferBroke/pkg/gossip"
 	"log"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -65,6 +67,15 @@ func normDead(p *gossip.ParticipantFaulty) map[string]any {
 	}
 }
 
+func getDistDir() string {
+	exePath, err := os.Executable()
+	if err != nil {
+		log.Fatal("failed to get executable path:", err)
+	}
+	exeDir := filepath.Dir(exePath)
+	return filepath.Join(exeDir, "dist")
+}
+
 func main() {
 
 	modeFlag := flag.String("mode", "node", "Mode: seed | node")
@@ -73,6 +84,7 @@ func main() {
 	clientPort := flag.String("clientPort", "5000", "Client port")
 	network := flag.String("network", "LOCAL", "LOCAL | PRIVATE | PUBLIC")
 	webAddr := flag.String("web", "127.0.0.1:9091", "Web listen addr (host:port)")
+	showLogs := flag.Bool("showLogs", false, "Show logs")
 
 	var routes clusterSeedAddrs
 	flag.Var(&routes, "routes", "Route addresses - can be specified multiple times")
@@ -140,7 +152,7 @@ func main() {
 
 		cfg.IsSeed = isSeed
 
-		cfg.Internal.DefaultLoggerEnabled = false
+		cfg.Internal.DefaultLoggerEnabled = *showLogs
 
 		return cfg, nil
 
@@ -209,7 +221,7 @@ func main() {
 	node.Start()
 	defer node.Stop()
 
-	fmt.Printf("server started on %s", *webAddr)
+	fmt.Printf("server started on %s\n\n", *webAddr)
 
 	// ----- Minimal Fiber app (per instance) -----
 	app := fiber.New()
@@ -260,9 +272,13 @@ func main() {
 		return c.JSON(fiber.Map{"ok": true})
 	})
 
+	//distDir := getDistDir()
+	//fmt.Printf("[web] Serving UI from %s\n", distDir)
+	//app.Static("/", distDir)
+
 	app.Static("/", "../dist")
 
-	log.Printf("Listening on http://%s", *webAddr)
+	fmt.Printf("Listening on http://%s\n", *webAddr)
 	if err := app.Listen(*webAddr); err != nil {
 		log.Fatal(err)
 	}
