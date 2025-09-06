@@ -1,47 +1,156 @@
-# Svelte + Vite
+# GoferBroke Toy App
 
-This template should help get you started developing with Svelte in Vite.
+This is a **visual showcase app** for the [GoferBroke](https://github.com/kristianJW54/GoferBroke) **gossip engine**. Each instance of the app launches a full GoferBroke node, gossips deltas, and emits real-time application events.
 
-## Recommended IDE Setup
+> Great for testing, visualizing, or extending GoferBroke into your own systems.
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+---
 
-## Need an official Svelte framework?
+## Purpose
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+This app exists to:
 
-## Technical considerations
+- ✅ **Demonstrate** how GoferBroke can power distributed state sync
+- ✅ **Visualize** real-time gossip events (deltas, joins, failures)
+- ✅ **Show** how applications can subscribe to gossip **events** to drive logic
+- ✅ **Test locally** with multiple node instances
 
-**Why use this over SvelteKit?**
+Each running instance is a full **cluster node** with its own:
+- Gossip engine
+- Delta store
+- Web UI
+- CLI-configurable identity
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+---
 
-This template contains as little as possible to get started with Vite + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+## How It Works
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+### Core Engine: GoferBroke
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+The app embeds the [GoferBroke gossip engine](https://github.com/kristianJW54/GoferBroke), which:
+- Spreads state updates via **anti-entropy gossip**
+- Tracks participant health via **phi accrual failure detection**
+- Sends structured **event notifications** for app-level use
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+### App Logic
 
-**Why include `.vscode/extensions.json`?**
+Each instance:
+- Starts a GoferBroke node via CLI flags
+- Hosts a local web UI (`/`)
+- Exposes `/events` (SSE) and `/api/delta` (POST) endpoints
+- Converts engine events into frontend-readable JSON:
+    - `delta_added`
+    - `delta_updated`
+    - `participant_added`
+    - `participant_dead`
 
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+---
 
-**Why enable `checkJs` in the JS template?**
+## Getting Started
 
-It is likely that most cases of changing variable types in runtime are likely to be accidental, rather than deliberate. This provides advanced typechecking out of the box. Should you like to take advantage of the dynamically-typed nature of JavaScript, it is trivial to change the configuration.
+### Prerequisites
 
-**Why is HMR not preserving my local component state?**
+- Go 1.21+
+- Node.js 20+
+- Git
 
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/sveltejs/svelte-hmr/tree/master/packages/svelte-hmr#preservation-of-local-state).
+---
 
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
+### 1. Clone and build
 
-```js
-// store.js
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+```bash
+git clone https://github.com/kristianJW54/GoferBroke-toy-app.git
+cd GoferBroke-toy-app
+
+# Build frontend
+npm install
+npm run build
 ```
+
+---
+
+### 2. Run a seed node
+
+```bash
+go run ./cmd/main.go   --mode=seed  --name=seed-1   --nodeAddr="localhost:8081"   --clientPort=5001   --web="localhost:9091" --network="LOCAL" --routes="localhost:8081"
+```
+
+### 3. Run a second node
+
+```bash
+go run ./cmd/main.go   --mode=node  --name=node-2   --nodeAddr="localhost:8082"   --clientPort=5002   --web="localhost:9092" --network="LOCAL"   --routes="localhost:8081"
+```
+
+Each node opens a UI at its `--web` port (e.g. `http://localhost:9091`).
+
+---
+
+## CLI Flags
+
+| Flag          | Description                            |
+|---------------|----------------------------------------|
+ | `--mode`      | `seed` or `node`                       |
+| `--name`      | Node name (unique per instance)        |
+| `--nodeAddr`  | Gossip engine listener (`host:port`)   |
+| `--clientPort` | Reserved for future internal API use   |
+| `--web`       | Port the web UI will be served on      |
+| `--network`   | LOCAL, PUBLIC or PRIVATE               |
+| `--routes`    | Seed node(s) to connect to (repeatable) |
+
+---
+
+## Event-Driven App Logic
+
+Gossip events power the app.
+
+When deltas change or nodes join/leave, the engine triggers:
+```go
+node.OnEvent(gossip.DeltaUpdated, func(e Event) {
+    // Your app logic here
+})
+```
+
+In this app:
+- Events are wrapped and pushed to an in-memory channel
+- The `/events` endpoint streams them to the UI via **SSE**
+- The frontend shows the gossip state live
+
+You can **subscribe to these events in your own app** to trigger:
+- Cache invalidation
+- Reactions to node failures
+- Coordinated workflows
+- Real-time messaging
+
+---
+
+##  Project Structure
+
+```txt
+/
+├── cmd/main.go         # Starts the Go server and node
+├── public/             # Static assets (logo, etc.)
+├── src/                # Svelte source
+├── dist/               # Built frontend
+└── README.md
+```
+
+---
+
+## Powered By
+
+- ⚙️ [GoferBroke](https://github.com/kristianJW54/GoferBroke)
+- 🎨 Svelte
+- 🌐 Go + Fiber (backend)
+- 💬 Server-Sent Events
+
+---
+
+##  License
+
+use freely and fork away!
+
+---
+
+## 🫶 Contribute
+
+Pull requests welcome — clone it, break it, improve it.
