@@ -6,6 +6,8 @@ This is a **visual showcase app** for the [GoferBroke](https://github.com/kristi
 
 ---
 
+![Gossip protocol demo](./demo.gif)
+
 ## Purpose
 
 This app exists to:
