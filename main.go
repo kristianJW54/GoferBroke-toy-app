@@ -79,7 +79,7 @@ func main() {
 	nodeName := flag.String("name", "node-a", "Node name")
 	nodeAddr := flag.String("nodeAddr", "127.0.0.1:8081", "Node listen addr (host:port)")
 	clientPort := flag.String("clientPort", "5000", "Client port")
-	network := flag.String("network", "LOCAL", "LOCAL | PRIVATE | PUBLIC")
+	network := flag.String("network", "LOCAL", "LOCAL | PRIVATE | PUBLIC | DYNAMIC")
 	webAddr := flag.String("web", "127.0.0.1:9091", "Web listen addr (host:port)")
 	showLogs := flag.Bool("showLogs", false, "Show logs")
 
@@ -106,13 +106,16 @@ func main() {
 		net = gossip.LOCAL
 		cNet = gossip.C_LOCAL
 	case "PRIVATE":
-		net = gossip.PRIVATE
+		net = gossip.UNDEFINED
 		cNet = gossip.C_PRIVATE
 	case "PUBLIC":
-		net = gossip.PUBLIC
+		net = gossip.UNDEFINED
 		cNet = gossip.C_PUBLIC
+	case "DYNAMIC":
+		cNet = gossip.C_DYNAMIC
+		net = gossip.UNDEFINED
 	default:
-		log.Fatal("network must be -> LOCAL | PRIVATE | PUBLIC")
+		log.Fatal("network must be -> LOCAL | PRIVATE | PUBLIC | DYNAMIC")
 	}
 
 	c, err := gossip.BuildClusterConfig("toy-cluster", func(config *gossip.ClusterConfig) error {
