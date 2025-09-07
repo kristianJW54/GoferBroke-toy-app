@@ -56,34 +56,72 @@ Each instance:
 
 ---
 
-### 1. Clone and build
+## Setup & Run (Windows & Linux)
+
+This guide walks you through cloning, building, and running your GoferBroke toy app with embedded UI on both **Windows** and **Linux**.
+
+### 1. Clone the Project
 
 ```bash
 git clone https://github.com/kristianJW54/GoferBroke-toy-app.git
 cd GoferBroke-toy-app
+```
 
-# Build frontend
+### 2. Build or Run Binary
+
+To build, run
+
+```bash
 npm install
 npm run build
 ```
 
----
+**For Windows**
 
-### 2. Run a seed node
+To build you own binary to run
 
-```bash
-go run ./cmd/main.go   --mode=seed  --name=seed-1   --nodeAddr="localhost:8081"   --clientPort=5001   --web="localhost:9091" --network="LOCAL" --routes="localhost:8081"
+```powershell
+go build -o toyapp.exe .
 ```
 
-### 3. Run a second node
+A pre-built binary exists **toyapp.exe**
 
-```bash
-go run ./cmd/main.go   --mode=node  --name=node-2   --nodeAddr="localhost:8082"   --clientPort=5002   --web="localhost:9092" --network="LOCAL"   --routes="localhost:8081"
+Run:
+
+```powershell
+./toyapp.exe --mode=seed --name="t-1" --nodeAddr="localhost:8081" --clientPort="5002" --web="localhost:9092" --routes="localhost:8081" --network=LOCAL
 ```
 
-Each node opens a UI at its `--web` port (e.g. `http://localhost:9091`).
+And in another terminal
 
----
+```powershell
+./toyapp.exe --mode=node --name="t-2" --nodeAddr="localhost:8082" --clientPort="5003" --web="localhost:9093" --routes="localhost:8081" --network=LOCAL
+```
+
+**For Linux**
+
+To build you own binary to run
+
+```powershell
+go build -o toyapp-linux .
+chmod +x toyapp-linux
+```
+
+A pre-built binary exists **toyapp-linux**
+
+Run:
+
+```powershell
+./toyapp-linux --mode=seed --name="t-1" --nodeAddr="localhost:8081" --clientPort="5002" --web="localhost:9092" --routes="localhost:8081" --network=LOCAL
+```
+
+And in another terminal
+
+```powershell
+./toyapp-linux --mode=node --name="t-2" --nodeAddr="localhost:8082" --clientPort="5003" --web="localhost:9093" --routes="localhost:8081" --network=LOCAL
+```
+
+
 
 ## CLI Flags
 
